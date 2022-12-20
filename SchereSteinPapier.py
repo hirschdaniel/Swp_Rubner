@@ -1,60 +1,63 @@
-from random import random, randrange
+import json
+from random import randrange
 
-from flask import Flask, jsonify
+from flask import Flask
 
 app = Flask(__name__)
-
 
 @app.route('/')
 def index():
     with open("data.txt", "r") as f:
-        txt = f.read()
-    return txt
+        txt1 = f.read()
+    data = []
+    txt = txt1.split(",")
+    for i in range(0,len(txt),3):
+        str = "Winner", txt[i], "ComputerChoice", txt[i + 1], "UserChoice", txt[i + 2]
+        data.append(str)
+        jsonData = json.dumps(data)
+    return jsonData
 
-
-
-
-symbol = ["Rock", "Paper", "Scissors", "Spock", "Lizard"]
+symbol = ["Rock", "Lizard", "Spock", "Scissors", "Paper"]
 
 def mode_choice():
-    mode = input("Bitte geben sie a für advanced ,n für normal ein, d fürs einsehen der daten ein oder s fürs starten des servers")
-    if mode != 'n' or mode !='a' or mode != 'd' or mode != 's':
+    mode = input("Bitte geben sie a für advanced ,n für normal, d fürs einsehen der statistiken oder s fürs starten des servers ein")
+    if mode != 'n' or mode != 'a' or mode != 'd' or mode != 's':
         print("Du hast ", mode,"eingegeben")
         return mode
     else:
-        print('Du musst n, a oder d eingeben  ')
+        print('Du musst n, a oder d eingeben')
 
 
 def userInput():
     while True:
         try:
-            userinput = int(input("Bitte geben sie 1 (Stein), 2 (Papier), 3(Schere) 4(Spock)  oder 5 (Echse) ein: "))
+            userinput = int(input("Bitte geben sie 0 (Stein), 1 (Echse), 2(Spock) 3(Schere)  oder 4 (Papier) ein: "))
         except ValueError:
             print("Es muss eine zahl sein")
             continue
-        if userinput >= 1 and userinput <= 5:
+        if userinput >= 0 and userinput <= 4:
             print("Du hast ", userinput, "(",symbol[userinput], ") eingegeben")
             return userinput
             break
         else:
-            print('Die Zahl muss zwischen 1 und 5 sein ')
+            print('Die Zahl muss zwischen 0 und 4 sein ')
 
-
-
-
-
-def getwinner(n1, n2):
-    if(n1 == n2):
-        return 2
+##useri, comp
+symbol = ["Rock", "Lizard", "Spock", "Scissors", "Paper"]
+def getwinner(p1, comp):
+    if(p1 == comp):
+        return 0
         print("unentschieden")
-    if(n1 == (n2+1)%4 or (n2+3)%4 ):
-        return 1
-    return 0
+    elif((p1+1)%5 == comp or (p1+3)%5 == comp ):
+        return 1 #userwins
+    else:
+        return 2 #comwins
+
+
 
 def comp():
-    compchoice = randrange(1,6)
+    compchoice = randrange(0,4)
     return compchoice
-
 
 
 def saveData(winner, s_compchoice, s_userinput):
@@ -68,9 +71,26 @@ def getData():
         txt = f.read()
     return txt
 
+def dataToStatistics():
+
+    l = getData().split(",")
+    userwin = 0
+    compwin = 0
+    draw = 0
+
+    for i in range (0, len(l), 3):
+        if(l[i] == '1'):
+            userwin = userwin + 1
+        if(l[i]== '2'):
+            compwin = compwin + 1
+        if(l[i]=='3'):
+            draw = draw +1
+    games = draw + compwin + userwin
+    print(" Es gab: ", games, "Spiele. Der Computer hat", compwin, " mal (", compwin/games*100,"%) gewonnen, der Spieler hat: ", userwin, " mal (", userwin/games*100,"%) gewonnen, und es war: ",draw," (",draw/games*100," unentschieden")
+
+
 
 def analyse(txt):
-    l1 = []
     data = []
     l1 = txt.split(',')
     for i in range(2, len(l1), 3):
@@ -85,18 +105,13 @@ def analyse(txt):
     c = (int(num)+1)%4
     return c
 
-
-
-
-
 def main():
     m =  mode_choice()
     if (m == 's'):
         app.run()
 
     if (m == 'd'):
-        print(getData())
-
+        dataToStatistics()
 
     if(m=='a'):
         co = analyse(getData())
@@ -110,12 +125,12 @@ def main():
     if (getwinner(ui, co) == 1):
             print("Du hast gewonnen!")
             w = 1
-    elif(getwinner(ui, co) == 0):
+    elif(getwinner(ui, co) == 2):
             print("Computer hat gewonnen!")
             w = 2
-    elif(getwinner(ui, co) == 2):
+    elif(getwinner(ui, co) == 0 ):
             print("Unentschieden")
-            w=3
+            w=0
 
     saveData(w, co, ui)
     print(analyse(getData()))
@@ -123,7 +138,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
