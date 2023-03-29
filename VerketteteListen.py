@@ -81,22 +81,17 @@ class LinkedList:
                  print(x.content)
 
 
-
-
 def main():
-
     Llist = LinkedList()
     Llist.insertBeginning(1)
     Llist.insertBeginning(2)
     Llist.insertBeginning(3)
     Llist.insert_end(88)
-
     Llist.get_all()
     print()
     Llist.get_index(1)
     print()
     Llist.delete(1)
-
 
 
 
